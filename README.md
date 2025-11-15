@@ -9,7 +9,7 @@ Target Labels:
 ## Dataset
 Download the dataset from:
 
-[a link](https://www.kaggle.com/datasets/shanegerami/ai-vs-human-text)
+[Kaggle Dataset Source](https://www.kaggle.com/datasets/shanegerami/ai-vs-human-text)
 
 After downloading, extract the files into:
 - `data/raw/`
