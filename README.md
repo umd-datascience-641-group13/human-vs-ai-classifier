@@ -1,7 +1,6 @@
 # Human vs AI Classifier
 A Transformer-based approach to text classification as either human authored or AI generated.
 
-Target Labels: 
 - `Human = 0`
 - `AI = 1`
 
