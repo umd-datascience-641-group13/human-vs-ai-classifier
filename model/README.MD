@@ -1,10 +1,30 @@
 # Model
 
-*IMPORTANT*
+This directory contains the training and evaluation code for the **Human vs AI Text Classifier**.
 
-FIRST Run `ai_human_preprocess.py` in `human-vs-ai-classifier/preprocessing` to create the cleaned csv data.
+---
 
-Make sure the following required file is in the current `/model` directory. 
+## ⚠️ Important: Preprocessing Required First
 
-Required file(s):
+Before running any model scripts, you must generate the cleaned dataset.
+
+1. Navigate to the preprocessing directory:
+
+```
+human-vs-ai-classifier/preprocessing
+```
+
+2. Run the preprocessing script:
+
+```bash
+python ai_human_preprocess.py
+```
+
+3. After the script completes, ensure that the generated file:
+
 - `ai_human_clean.csv`
+
+exists or is moved into the current `/model` directory.
+
+This file is required for training and evaluation.
+
