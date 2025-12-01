@@ -18,5 +18,5 @@ Required file(s):
 - `AI_Human.csv`
 
 ## Running the Model
-Either the custom transformer model or the RoBERTa model should automatically run the ai_human_preprocess.py and generate the necessary file.
-The custom transformer runs much quicker than RoBERTa.
+Both the custom transformer model and the RoBERTa model should automatically run the ai_human_preprocess.py and generate the necessary cleaned dataframe.
+The custom transformer runs much quicker than RoBERTa during training.
