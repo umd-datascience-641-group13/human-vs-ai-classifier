@@ -5,7 +5,10 @@ This directory contains the training and evaluation code for the **Human vs AI T
 ---
 
 ## ⚠️ Important: Preprocessing Required First
+The transformer_model.py will preprocess the data using the preprocessing script. If an error occurs, please follow the manual method outlined below, 
+or point the script to the correct ai_human_preprocess.py location.
 
+### Manual Method
 Before running any model scripts, you must generate the cleaned dataset.
 
 1. Navigate to the preprocessing directory:
