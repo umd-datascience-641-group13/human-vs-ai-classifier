@@ -272,7 +272,7 @@ def main(num_epochs=1):
 
     for epoch in range(num_epochs):
         model.train()
-        epoch_bar = tqdm(train_loader, desc=f"Epoch {epoch}", leave=False)
+        epoch_bar = tqdm(train_loader, desc=f"Epoch {epoch+1}", leave=False)
 
         for batch in epoch_bar:
             input_ids = batch["input_ids"].to(device)
