@@ -19,4 +19,4 @@ Required file(s):
 
 ## Running the Model
 Both the custom transformer model and the RoBERTa model should automatically run the ai_human_preprocess.py and generate the necessary cleaned dataframe.
-The custom transformer runs much quicker than RoBERTa during training. Start with - `transformer_model.py` located in the model folder.
+The custom transformer runs much quicker than RoBERTa during training. Start with `transformer_model.py` located in the model folder.
