@@ -138,7 +138,7 @@ def main():
 
     
     # Creating the output directory if needed
-    output_path = Path(__file__).resolve().parent.parent / "Custom_Transformer_Model" / "ai_human_clean.csv"
+    output_path = Path(__file__).resolve().parent.parent / "Cleaned Data" / "ai_human_clean.csv"
     os.makedirs(output_path.parent, exist_ok=True)
     df_export.to_csv(output_path, header=True, encoding="utf-8", index=False)
     print(f"✔ File saved as '{output_path.name}' in {output_path.parent}")
