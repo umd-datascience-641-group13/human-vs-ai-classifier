@@ -9,6 +9,7 @@ from pathlib import Path
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support, classification_report, confusion_matrix
 import time
+import json
 
 start_time = time.time()
 def get_project_root():
@@ -402,21 +403,7 @@ def main(num_epochs=1):
             epoch_bar.set_postfix(loss=loss.item())
             
         print("Done Training")
-        # simple val loop
-        # model.eval()
-        # correct = total = 0
-        # with torch.no_grad():
-        #     for input_ids, labels in val_loader:
-        #         input_ids = input_ids.to(device)
-        #         labels = labels.to(device)
-        #         logits = model(input_ids)
-        #         preds = logits.argmax(dim=-1)
-        #         correct += (preds == labels).sum().item()
-        #         total += labels.size(0)
-        # val_accy_.append(round(correct / total,4))
-
-        # print(f"Epoch {epoch+1}: val acc = {correct / total:.4f}")
-
+   
         # simple val loop
         model.eval()
         correct = 0
@@ -453,15 +440,15 @@ def main(num_epochs=1):
             pos_label=1)
 
         print(
-            f"Epoch {epoch}: "
+            f"Epoch {epoch+1}: "
             f"val loss={avg_val_loss:.4f}, "
             f"val acc={val_acc:.4f}, "
             f"F1={f1:.4f}")
 
         if f1 > best_f1:
             best_f1 = f1
-            best_epoch = epoch
-            print(f"New best F1 {best_f1:.4f} at epoch {epoch}, saving model...")
+            best_epoch = epoch+1
+            print(f"New best F1 {best_f1:.4f} at epoch {epoch+1}, saving model...")
             torch.save(
                 model.state_dict(),
                 "saved_custom_transformer/model.pt")
@@ -475,11 +462,7 @@ def main(num_epochs=1):
     "pad_idx": 0,
     "vocab_size": len(vocab)}
 
-
-    import json
-    with open("custom_model_config.json", "w") as f:
-        json.dump(config, f)
-
+   
     #torch.save(model.state_dict(), "saved_custom_transformer/model.pt")
 
     with open("saved_custom_transformer/vocab.json", "w") as f:
