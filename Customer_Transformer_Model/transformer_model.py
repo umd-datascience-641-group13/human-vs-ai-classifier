@@ -7,8 +7,10 @@ from torch import nn
 from torch.utils.data import Dataset, DataLoader,TensorDataset
 from pathlib import Path
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support, classification_report, confusion_matrix
+import time
 
-
+start_time = time.time()
 def get_project_root():
     """
     If running as a .py file, use __file__.
@@ -48,10 +50,16 @@ def run_preprocessing():
 
 
 def split_data(df):
-
     # Creating the splits for train, test, val
-    X_train, X_test, y_train, y_test = train_test_split(df.text, df.ai, test_size=0.05, random_state=42)
-    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.05, random_state=42)
+    #X_train, X_test, y_train, y_test = train_test_split(df.text, df.label, test_size=0.05, random_state=42)
+    #X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.05, random_state=42)
+    train_df = df[df["split"] == "train"]
+    val_df   = df[df["split"] == "val"]
+    test_df  = df[df["split"] == "test"]
+
+    X_train, y_train = train_df["text"], train_df["label"]
+    X_val,   y_val   = val_df["text"],   val_df["label"]
+    X_test,  y_test  = test_df["text"],  test_df["label"]
     print(f"Train Samples: {len(y_train)}")
     print(f"Test Samples: {len(y_test)}")
     print(f"Val Samples: {len(y_val)}\n")
@@ -289,6 +297,23 @@ class AIHumanTransformerClassifier(nn.Module):
         return logits
 
 
+def get_predictions_and_labels(model, data_loader, device):
+    model.eval()
+    all_preds = []
+    all_labels = []
+
+    with torch.no_grad():
+        for input_ids, labels in data_loader:
+            input_ids = input_ids.to(device)
+            labels = labels.to(device)
+
+            logits = model(input_ids)              # [B, num_classes]
+            preds = torch.argmax(logits, dim=-1)
+
+            all_preds.extend(preds.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
+
+    return np.array(all_labels), np.array(all_preds)
 
 
 
@@ -348,10 +373,19 @@ def main(num_epochs=1):
     ).to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
-    
+    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)
+
+    best_f1 = 0.0
+    best_epoch = -1
+
     from tqdm.auto import tqdm
     num_epochs = num_epochs
+
+    # Save Directory for model
+    save_dir = Path("saved_custom_transformer")
+    save_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Save directory created at: {save_dir.resolve()}")
+
     for epoch in range(num_epochs):
         model.train()
         epoch_bar = tqdm(train_loader, desc=f"Epoch {epoch+1}", leave=False)
@@ -369,26 +403,121 @@ def main(num_epochs=1):
             
         print("Done Training")
         # simple val loop
+        # model.eval()
+        # correct = total = 0
+        # with torch.no_grad():
+        #     for input_ids, labels in val_loader:
+        #         input_ids = input_ids.to(device)
+        #         labels = labels.to(device)
+        #         logits = model(input_ids)
+        #         preds = logits.argmax(dim=-1)
+        #         correct += (preds == labels).sum().item()
+        #         total += labels.size(0)
+        # val_accy_.append(round(correct / total,4))
+
+        # print(f"Epoch {epoch+1}: val acc = {correct / total:.4f}")
+
+        # simple val loop
         model.eval()
-        correct = total = 0
+        correct = 0
+        total = 0
+        val_loss_sum = 0.0
+        all_labels = []
+        all_preds = []
+
         with torch.no_grad():
             for input_ids, labels in val_loader:
                 input_ids = input_ids.to(device)
                 labels = labels.to(device)
-                logits = model(input_ids)
+
+                logits = model(input_ids)                  # [B, num_classes]
+                loss = criterion(logits, labels)
+
+                val_loss_sum += loss.item() * labels.size(0)
+
                 preds = logits.argmax(dim=-1)
                 correct += (preds == labels).sum().item()
                 total += labels.size(0)
-        val_accy_.append(round(correct / total,4))
 
-        print(f"Epoch {epoch+1}: val acc = {correct / total:.4f}")
+                all_labels.extend(labels.cpu().numpy())
+                all_preds.extend(preds.cpu().numpy())
 
+        avg_val_loss = val_loss_sum / total
+        val_acc = correct / total
+        all_labels = np.array(all_labels)
+        all_preds = np.array(all_preds)
+
+        precision, recall, f1, _ = precision_recall_fscore_support(
+            all_labels, all_preds,
+            average="binary",
+            pos_label=1)
+
+        print(
+            f"Epoch {epoch}: "
+            f"val loss={avg_val_loss:.4f}, "
+            f"val acc={val_acc:.4f}, "
+            f"F1={f1:.4f}")
+
+        if f1 > best_f1:
+            best_f1 = f1
+            best_epoch = epoch
+            print(f"New best F1 {best_f1:.4f} at epoch {epoch}, saving model...")
+            torch.save(
+                model.state_dict(),
+                "saved_custom_transformer/model.pt")
+
+    config = {
+    "d_model": 128,
+    "n_heads": 4,
+    "num_layers": 2,
+    "dim_ff": 256,
+    "max_len": 128,
+    "pad_idx": 0,
+    "vocab_size": len(vocab)}
+
+
+    import json
+    with open("custom_model_config.json", "w") as f:
+        json.dump(config, f)
+
+    #torch.save(model.state_dict(), "saved_custom_transformer/model.pt")
+
+    with open("saved_custom_transformer/vocab.json", "w") as f:
+        json.dump(vocab, f)
+
+    with open("saved_custom_transformer/config.json", "w") as f:
+        json.dump(config, f)       
+    
+
+
+    print(f"Best epoch by F1: {best_epoch} with F1={best_f1:.4f}")
+
+    y_true, y_pred = get_predictions_and_labels(model, val_loader, device)
+
+    
+    accuracy = accuracy_score(y_true, y_pred)
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        y_true, y_pred, average="binary", pos_label=1)
+
+    print("\nFinal metrics:")
+    print(f"Accuracy : {accuracy:.4f}")
+    print(f"Precision: {precision:.4f}")
+    print(f"Recall   : {recall:.4f}")
+    print(f"F1-score : {f1:.4f}")
+
+    print("\nClassification report:")
+    print(classification_report(y_true, y_pred, target_names=["Human (0)", "AI (1)"]))
+
+    print("\nConfusion matrix:")
+    print(confusion_matrix(y_true, y_pred))
 
 if __name__ == "__main__":
-    main(num_epochs=1) 
+    main(num_epochs=10) 
 
 
-
+end_time = time.time()
+elapsed_time = end_time - start_time
+print(f"Time taken: {elapsed_time:.4f} seconds")
 
 
 
