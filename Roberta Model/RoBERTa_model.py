@@ -37,7 +37,6 @@ def get_project_root():
     return cwd
 
 
-
 def run_preprocessing():
     from preprocessing.ai_human_preprocess import main as preprocess_main
     # Run preprocessing
@@ -48,20 +47,14 @@ def run_preprocessing():
     return df
 
 
-
 project_root = get_project_root()
 os.chdir(project_root)
 print("Project root set to:", project_root)
 sys.path.append(str(project_root)) # Making sure dir is good
 
 
-
-
 def split_data(df):
 
-    # Creating the splits for train, test, val
-    #X_train, X_test, y_train, y_test = train_test_split(df.text, df.label, test_size=0.05, random_state=42)
-    #X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.05, random_state=42)
     train_df = df[df["split"] == "train"]
     val_df   = df[df["split"] == "val"]
     test_df  = df[df["split"] == "test"]
@@ -84,7 +77,6 @@ def testing_model_small_data(X_train, y_train, X_test, y_test, X_val, y_val, n_r
     y_val = y_val.iloc[:n_rows]
 
     return X_train, y_train, X_test, y_test, X_val, y_val
-
 
 
 class AIHumanRobertaDataset(Dataset):
@@ -111,15 +103,13 @@ class AIHumanRobertaDataset(Dataset):
             max_length=self.max_len,
             padding="max_length",
             truncation=True,
-            return_tensors="pt"
-        )
+            return_tensors="pt")
 
         # squeeze(0) because tokenizer returns shape [1, max_len]
         item = {
             "input_ids": enc["input_ids"].squeeze(0),
             "attention_mask": enc["attention_mask"].squeeze(0),
-            "labels": torch.tensor(label, dtype=torch.long)
-        }
+            "labels": torch.tensor(label, dtype=torch.long)}
         return item
 
 
@@ -128,8 +118,7 @@ def make_roberta_loaders(
     tokenizer,
     max_len=128,
     batch_size=64,
-    num_workers=0
-):
+    num_workers=0):
     train_ds = AIHumanRobertaDataset(X_train, y_train, tokenizer, max_len)
     val_ds   = AIHumanRobertaDataset(X_val,   y_val,   tokenizer, max_len)
     test_ds  = AIHumanRobertaDataset(X_test,  y_test,  tokenizer, max_len)
@@ -137,110 +126,19 @@ def make_roberta_loaders(
     train_loader = DataLoader(
         train_ds, batch_size=batch_size, shuffle=True,
         pin_memory=True, num_workers=num_workers,
-        persistent_workers=(num_workers > 0), drop_last=True
-    )
+        persistent_workers=(num_workers > 0), drop_last=True)
 
     val_loader = DataLoader(
         val_ds, batch_size=batch_size, shuffle=False,
         pin_memory=True, num_workers=num_workers,
-        persistent_workers=(num_workers > 0)
-    )
+        persistent_workers=(num_workers > 0))
 
     test_loader = DataLoader(
         test_ds, batch_size=batch_size, shuffle=False,
         pin_memory=True, num_workers=num_workers,
-        persistent_workers=(num_workers > 0)
-    )
+        persistent_workers=(num_workers > 0))
 
     return train_loader, val_loader, test_loader
-
-
-
-
-class AIHumanTransformerClassifier(nn.Module):
-    """
-    Small encoder-only transformer for AI vs Human text classification.
-
-    Architecturally inspired by the encoder stack in
-    'Attention Is All You Need' (Vaswani et al., 2017) and
-    encoder-only models like BERT/Roberta, but much smaller and trained from scratch.
-    """
-    def __init__(
-        self,
-        vocab_size,
-        d_model=128,
-        n_heads=4,
-        num_layers=2,
-        dim_ff=256,
-        num_classes=2,
-        max_len=128,
-        dropout=0.1,
-        pad_idx=0,
-    ):
-        super().__init__()
-        self.pad_idx = pad_idx
-        self.d_model = d_model
-
-        # 1) Token embedding: [B, L] -> [B, L, d_model]
-        self.token_embedding = nn.Embedding(
-            padding_idx=pad_idx,
-            num_embeddings=vocab_size,
-            embedding_dim=d_model
-        )
-
-        # 2) Positional encoding (your sinusoidal implementation)
-        self.pos_encoding = PositionalEncoding(
-            d_model=d_model,
-            max_len=max_len,
-            dropout=dropout
-        )
-
-        # 3) Encoder stack (multi-head self-attention + FFN)
-        encoder_layer = nn.TransformerEncoderLayer(
-            d_model=d_model,
-            nhead=n_heads,
-            dim_feedforward=dim_ff,
-            dropout=dropout,
-            activation="gelu",      # closer to BERT/Roberta
-            batch_first=True        # input: [B, L, d_model]
-        )
-        self.encoder = nn.TransformerEncoder(
-            encoder_layer,
-            num_layers=num_layers
-        )
-
-        # 4) Classification head
-        self.classifier = nn.Sequential(
-            nn.Linear(d_model, d_model),
-            nn.GELU(),
-            nn.Dropout(dropout),
-            nn.Linear(d_model, num_classes)
-        )
-
-    def forward(self, input_ids):
-        """
-        input_ids: [batch_size, seq_len] of token IDs
-        returns: logits [batch_size, num_classes]
-        """
-        # mask: True where padding
-        pad_mask = (input_ids == self.pad_idx)          # [B, L]
-
-        # token + positional embeddings
-        x = self.token_embedding(input_ids)             # [B, L, d_model]
-        x = self.pos_encoding(x)                        # [B, L, d_model]
-
-        # encoder expects src_key_padding_mask: True = ignore
-        x = self.encoder(x, src_key_padding_mask=pad_mask)  # [B, L, d_model]
-
-        # mean-pool over non-pad tokens
-        mask = (~pad_mask).unsqueeze(-1)                # [B, L, 1]
-        x_masked = x * mask
-        summed = x_masked.sum(dim=1)                    # [B, d_model]
-        lengths = mask.sum(dim=1).clamp(min=1)          # [B, 1]
-        pooled = summed / lengths                       # [B, d_model]
-
-        logits = self.classifier(pooled)                # [B, num_classes]
-        return logits
 
 
 def get_predictions_and_labels(model, data_loader, device):
@@ -271,7 +169,6 @@ def main(num_epochs):
     print(device)
     df = run_preprocessing()
     X_train, y_train, X_test, y_test, X_val, y_val = split_data(df)
-    #X_train, y_train, X_test, y_test, X_val, y_val = testing_model_small_data(X_train, y_train, X_test, y_test, X_val, y_val, n_rows = nrows)
     print(f"X_train shape: {X_train.shape}")
     print(f"y_train shape: {y_train.shape}")
     print(f"X_test shape: {X_test.shape}")
@@ -287,13 +184,11 @@ def main(num_epochs):
         tokenizer=tokenizer,
         max_len=128,
         batch_size=64,
-        num_workers=0
-    )
+        num_workers=0)
 
     model = AutoModelForSequenceClassification.from_pretrained(
         "roberta-base",
-        num_labels=2
-    ).to(device)
+        num_labels=2).to(device)
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5)  
 
@@ -317,15 +212,12 @@ def main(num_epochs):
             outputs = model(
                 input_ids=input_ids,
                 attention_mask=attention_mask,
-                labels=labels
-            )
+                labels=labels)
             loss = outputs.loss
             loss.backward()
             optimizer.step()
 
             epoch_bar.set_postfix(loss=loss.item())
-
-        
 
         # simple val loop
         model.eval()
@@ -343,8 +235,7 @@ def main(num_epochs):
                 outputs = model(
                     input_ids=input_ids,
                     attention_mask=attention_mask,
-                    labels=labels
-                )
+                    labels=labels)
                 loss = outputs.loss
                 logits = outputs.logits
 
@@ -377,11 +268,7 @@ def main(num_epochs):
             print(f"  ↳ New best F1 {best_f1:.4f} at epoch {epoch+1}, saving model...")
             model.save_pretrained(f"saved_roberta")
             tokenizer.save_pretrained(f"saved_roberta")
-    
-    #model.save_pretrained("saved_roberta_10")
-    #tokenizer.save_pretrained("saved_roberta_10")
 
-    
     print(f"Best epoch by F1: {best_epoch} with F1={best_f1:.4f}")
 
     y_true, y_pred = get_predictions_and_labels(model, val_loader, device)
