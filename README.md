@@ -9,6 +9,12 @@ Both models are evaluated on the Kaggle Human vs AI dataset using ROC, AUC, Prec
 
 ## Python
 - Python = 3.10
+- 
+## Install Dependencies
+`pip install -r requirements.txt`
+
+GPU users may install a CUDA-enabled PyTorch version from:
+https://pytorch.org/get-started/locally/
 
 ## Verify Results
 To simply verify results, start with the Load_PreSaved folder. Running `Load_Presaved_Custom_Transformer.py` is the least resource intensive script.
@@ -55,11 +61,6 @@ Output classification labels:
 Both the custom transformer model and the RoBERTa model should automatically run the ai_human_preprocess.py and generate the necessary cleaned dataframe.
 The custom transformer, `transformer_model.py`,  runs much quicker than RoBERTa during training and is located in the Custom_Transformer_Model folder.
 
-## Install Dependencies
-`pip install -r requirements.txt`
-
-GPU users may install a CUDA-enabled PyTorch version from:
-https://pytorch.org/get-started/locally/
 
 ## Dataset
 The Dataset should automatically be downloaded, but in case of an error: 
