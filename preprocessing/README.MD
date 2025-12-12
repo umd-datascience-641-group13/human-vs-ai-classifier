@@ -7,7 +7,7 @@ This folder contains the preprocessing script responsible for cleaning and struc
 ### `ai_human_preprocess.py`
 This script:
 1. Downloads the dataset from Google Drive (via `gdown`)  
-2. Loads `AI_Human.csv`, originally from [Kaggle](https://www.kaggle.com/datasets/shanegerami/ai-vs-human-text){:target="_blank" rel="noopener"}
+2. Loads `AI_Human.csv`, originally from [Kaggle](https://www.kaggle.com/datasets/shanegerami/ai-vs-human-text)
 3. Cleans the text:
    - Unicode normalization (NFC)
    - Remove outer quotes
