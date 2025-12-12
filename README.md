@@ -76,4 +76,4 @@ The Dataset should automatically be downloaded, but in case of an error:
   
 ## Performance Metrics
 - RoBERTa AUC ≈ 0.999
-- Custom Transformer AUC ≈ 0.93
+- Custom Transformer AUC ≈ 0.95
