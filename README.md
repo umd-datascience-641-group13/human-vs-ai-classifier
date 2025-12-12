@@ -1,7 +1,12 @@
 # Human vs AI Classifier
-A Transformer-based approach to text classification as either human authored or AI generated.
+A Transformer-based system that classifies text as either human-authored or AI-generated.
 
-This project compares the HuggingFace RoBERTa finetuned model versus a custom torch nn Transformer Model.
+This project compares:
+- HuggingFace RoBERTa (fine-tuned)
+- A custom PyTorch Transformer model (built from scratch)
+
+Both models are evaluated on the Kaggle Human vs AI dataset using ROC, AUC, Precision, Recall, and F1.
+
 ## Verify Results
 To simply verify results, start with the Load_PreSaved folder. Running `Load_Presaved_Custom_Transformer.py` is the least resource intensive script.
 
