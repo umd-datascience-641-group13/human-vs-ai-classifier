@@ -50,7 +50,7 @@ Output classification labels:
 
 ## Running the Model
 Both the custom transformer model and the RoBERTa model should automatically run the ai_human_preprocess.py and generate the necessary cleaned dataframe.
-The custom transformer runs much quicker than RoBERTa during training. The `transformer_model.py` located in the Custom_Transformer_Model folder.
+The custom transformer, `transformer_model.py`,  runs much quicker than RoBERTa during training and is located in the Custom_Transformer_Model folder.
 
 ## Install Dependencies
 `pip install -r requirements.txt`
