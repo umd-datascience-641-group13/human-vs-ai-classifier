@@ -1,33 +1,30 @@
-# Model
+# Custom Transformer Model
 
-This directory contains the training and evaluation code for the **Human vs AI Text Classifier**.
+This folder contains the implementation of a lightweight Transformer architecture used to classify text as either Human, 0, or AI generated, 1.
 
----
+## Files
 
-## ⚠️ Important Preprocessing Information
-The transformer_model.py will preprocess the data using the preprocessing script. If an error occurs, please follow the manual method outlined below, 
-or point the script to the correct ai_human_preprocess.py location.
+### `transformer_model.py`
+A PyTorch implementation of an encoder-only Transformer model, inspired by "Attention Is All You Need".  
+Key features include:
+- Learned token embeddings
+- Sinusoidal positional encoding
+- Multi-head self-attention encoder layers
+- Feed-forward projection layers
+- Classification head with 2 outputs
+- Cross-entropy training objective
 
-### Manual Method
-Before running any model scripts, you must generate the cleaned dataset.
+This model is significantly smaller than RoBERTa and trains much more quickly.
 
-1. Navigate to the preprocessing directory:
+- Automatically runs the preprocessing script 
+- Splits into train/val/test sets
+- Trains for N epochs (default = 10)
+- Saves:
+  - `model.pt` (PyTorch weights)
+  - `config.json`
+  - `vocab.json`
 
-```
-human-vs-ai-classifier/preprocessing
-```
-
-2. Run the preprocessing script:
-
-```bash
-python ai_human_preprocess.py
-```
-
-3. After the script completes, ensure that the generated file:
-
-- `ai_human_clean.csv`
-
-exists or is moved into the current `/model` directory.
-
-This file is required for training and evaluation.
+## Output Labels
+0 = Human 
+1 = AI
 
