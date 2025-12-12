@@ -2,6 +2,10 @@
 A Transformer-based approach to text classification as either human authored or AI generated.
 
 This project compares the HuggingFace RoBERTa finetuned model versus a custom torch nn Transformer Model.
+## Verify Results
+To simply verify results, start with the Load_PreSaved folder. Running `Load_Presaved_Custom_Transformer.py` is the least resource intensive script.
+
+## Repo Contents
 Included in this repo, as shown in the folder structure, are the following items:
 - Custom Transformer Model
   - Contains `transformer_model.py`
