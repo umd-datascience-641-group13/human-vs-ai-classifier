@@ -7,6 +7,9 @@ This project compares:
 
 Both models are evaluated on the Kaggle Human vs AI dataset using ROC, AUC, Precision, Recall, and F1.
 
+## Python
+- Python = 3.10
+
 ## Verify Results
 To simply verify results, start with the Load_PreSaved folder. Running `Load_Presaved_Custom_Transformer.py` is the least resource intensive script.
 
