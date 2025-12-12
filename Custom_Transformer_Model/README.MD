@@ -1,6 +1,6 @@
 # Custom Transformer Model
 
-This folder contains the implementation of a lightweight Transformer architecture used to classify text as either Human, 0, or AI generated, 1.
+This folder contains the implementation of a lightweight Transformer architecture used to classify text as either Human, or AI generated.
 
 ## Files
 
@@ -26,5 +26,6 @@ This model is significantly smaller than RoBERTa and trains much more quickly.
 
 ## Output Labels
 0 = Human 
+
 1 = AI
 
