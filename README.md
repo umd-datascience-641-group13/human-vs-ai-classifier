@@ -9,12 +9,13 @@ Both models are evaluated on the Kaggle Human vs AI dataset using ROC, AUC, Prec
 
 ## Python
 - Python = 3.10
-- 
 ## Install Dependencies
 `pip install -r requirements.txt`
 
 GPU users may install a CUDA-enabled PyTorch version from:
 https://pytorch.org/get-started/locally/
+- Our used Version
+  - pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 
 ## Verify Results
 To simply verify results, start with the Load_PreSaved folder. Running `Load_Presaved_Custom_Transformer.py` is the least resource intensive script.
