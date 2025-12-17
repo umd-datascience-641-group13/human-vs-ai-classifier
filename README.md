@@ -20,6 +20,14 @@ https://pytorch.org/get-started/locally/
 ## Verify Results
 To simply verify results, start with the Load_PreSaved folder. Running `Load_Presaved_Custom_Transformer.py` is the least resource intensive script.
 
+## Running the Model
+Both the custom transformer model and the RoBERTa model should automatically run the ai_human_preprocess.py and generate the necessary cleaned dataframe.
+The custom transformer, `transformer_model.py`,  runs much quicker than RoBERTa during training and is located in the Custom_Transformer_Model folder.
+
+Output classification labels:
+- `Human = 0`
+- `AI = 1`
+
 ## Repo Contents
 Included in this repo, as shown in the folder structure, are the following items:
 - Custom Transformer Model
@@ -53,14 +61,6 @@ Included in this repo, as shown in the folder structure, are the following items
     - Produces ROC and AUC results along with Precision, Recall, and F1 Scores
 
 
-Output classification labels:
-- `Human = 0`
-- `AI = 1`
-
-
-## Running the Model
-Both the custom transformer model and the RoBERTa model should automatically run the ai_human_preprocess.py and generate the necessary cleaned dataframe.
-The custom transformer, `transformer_model.py`,  runs much quicker than RoBERTa during training and is located in the Custom_Transformer_Model folder.
 
 
 ## Dataset
